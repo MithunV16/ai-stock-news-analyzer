@@ -29,7 +29,7 @@ export class BSENormalizer {
 
   private mapRow(row: BseAnnouncementRow): AnnouncementDraft | null {
     const symbol = this.resolveSymbol(row);
-    const headline = (row.NEWSSUB ?? row.HEADLINE ?? '').trim();
+    const headline = (row.Subject ?? row.NEWSSUB ?? row.HEADLINE ?? '').trim();
     const companyName = (row.SLONGNAME ?? row.LONGNAME ?? symbol).trim();
     const publishedAt = parseAnnouncementDate(row.DissemDT ?? row.NEWS_DT, 'bse-iso');
 
@@ -59,8 +59,9 @@ export class BSENormalizer {
       return candidates[0].trim();
     }
 
-    if (row.NEWSID) {
-      return `https://www.bseindia.com/stock-share-price/announcements/${row.NEWSID}`;
+    if (row.Newsid ?? row.NEWSID) {
+      const newsId = String(row.Newsid ?? row.NEWSID);
+      return `https://www.bseindia.com/stock-share-price/announcements/${newsId}`;
     }
 
     return undefined;

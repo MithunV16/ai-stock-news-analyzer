@@ -12,6 +12,7 @@ ARG NEXT_PUBLIC_API_URL=http://localhost:4000
 ARG NEXT_PUBLIC_SOCKET_URL=http://localhost:4000
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_SOCKET_URL=$NEXT_PUBLIC_SOCKET_URL
+ENV NEXT_OUTPUT=standalone
 
 RUN npm run build
 
@@ -24,8 +25,8 @@ RUN apk add --no-cache dumb-init
 RUN addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 nextjs
 
 COPY --from=builder /app/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.cache/next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.cache/next/static ./.next/static
 
 USER nextjs
 EXPOSE 3000

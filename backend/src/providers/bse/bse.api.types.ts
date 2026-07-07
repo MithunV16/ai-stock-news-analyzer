@@ -1,5 +1,9 @@
 /** Raw BSE corporate announcement row — provider-internal only */
 export interface BseAnnouncementRow {
+  /** Browser API field */
+  Subject?: string;
+  /** Browser API field */
+  Newsid?: string;
   SCRIP_CD?: string;
   scrip_cd?: string;
   SLONGNAME?: string;
@@ -17,26 +21,12 @@ export interface BseAnnouncementRow {
   [key: string]: unknown;
 }
 
-/** BSE paginated API response */
-export interface BseAnnouncementsApiResponse {
-  Table?: BseAnnouncementRow[];
-  [key: string]: unknown;
-}
-
-export interface BseQueryParams {
-  Pageno: number;
-  strCat: string;
-  strPrevDate: string;
-  strScrip: string;
-  strSearch: string;
-  strToDate: string;
-  strType: string;
-}
+/** BSE returns a JSON array directly — not { Table: [] } */
+export type BseAnnouncementsApiResponse = BseAnnouncementRow[];
 
 export interface BseHttpFetchResult {
   rows: BseAnnouncementRow[];
   requestUrl: string;
   httpStatus: number;
   durationMs: number;
-  pagesFetched: number;
 }

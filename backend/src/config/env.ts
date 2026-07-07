@@ -102,8 +102,6 @@ const envSchema = z.object({
   BSE_ANNOUNCEMENTS_PATH: z
     .string()
     .default('/BseIndiaAPI/api/CorpAnn/w'),
-  BSE_DATE_RANGE_DAYS: z.coerce.number().int().positive().default(1),
-  BSE_MAX_PAGES: z.coerce.number().int().positive().default(20),
   BSE_TIMEOUT_MS: z.coerce.number().int().positive().default(15_000),
   BSE_MAX_RETRIES: z.coerce.number().int().min(0).max(10).default(3),
 

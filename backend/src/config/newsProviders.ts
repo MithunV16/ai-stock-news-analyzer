@@ -65,8 +65,6 @@ function buildBseConfig(): BseProviderConfig {
     enabled: isProviderEnabled('bse'),
     baseUrl: config.BSE_BASE_URL,
     announcementsPath: config.BSE_ANNOUNCEMENTS_PATH,
-    dateRangeDays: config.BSE_DATE_RANGE_DAYS,
-    maxPages: config.BSE_MAX_PAGES,
     headers: {
       ...COMMON_BROWSER_HEADERS,
       Referer: `${config.BSE_BASE_URL}/`,

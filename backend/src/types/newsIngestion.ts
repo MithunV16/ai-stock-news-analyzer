@@ -49,10 +49,6 @@ export interface BseProviderConfig {
   enabled: boolean;
   baseUrl: string;
   announcementsPath: string;
-  /** How many days back to query on each poll */
-  dateRangeDays: number;
-  /** Max pagination pages per fetch cycle (safety cap) */
-  maxPages: number;
   headers: Readonly<Record<string, string>>;
   http: HttpClientConfig;
 }

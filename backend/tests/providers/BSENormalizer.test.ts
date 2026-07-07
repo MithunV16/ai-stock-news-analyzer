@@ -23,6 +23,21 @@ describe('BSENormalizer', () => {
     });
   });
 
+  it('maps browser API row shape (Subject, Newsid)', () => {
+    const draft = normalizer.normalize({
+      Subject: 'Board Meeting Outcome',
+      Newsid: '789012',
+      SCRIP_CD: '500325',
+      SLONGNAME: 'Reliance Industries Ltd',
+    });
+
+    expect(draft).toMatchObject({
+      headline: 'Board Meeting Outcome',
+      symbol: '500325',
+      url: 'https://www.bseindia.com/stock-share-price/announcements/789012',
+    });
+  });
+
   it('builds fallback URL from NEWSID when no http link exists', () => {
     const draft = normalizer.normalize({
       SCRIP_CD: '532540',

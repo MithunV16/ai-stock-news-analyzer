@@ -8,5 +8,4 @@ export type {
   BseAnnouncementRow,
   BseAnnouncementsApiResponse,
   BseHttpFetchResult,
-  BseQueryParams,
 } from '@/providers/bse/bse.api.types';

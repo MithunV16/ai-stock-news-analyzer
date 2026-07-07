@@ -5,13 +5,12 @@ import type {
   BseAnnouncementRow,
   BseAnnouncementsApiResponse,
   BseHttpFetchResult,
-  BseQueryParams,
 } from '@/providers/bse/bse.api.types';
 import { logger } from '@/utils/logger';
 
 /**
- * HTTP client for BSE India API with pagination support.
- * All BSE HTTP logic is isolated here — BSEProvider does not use Axios directly.
+ * HTTP client for BSE India API.
+ * Matches the browser: GET /BseIndiaAPI/api/CorpAnn/w with no query parameters.
  */
 export class BSEHttpClient {
   private readonly client: AxiosInstance;
@@ -26,91 +25,61 @@ export class BSEHttpClient {
     });
   }
 
-  async fetchAnnouncements(
-    strPrevDate: string,
-    strToDate: string,
-  ): Promise<BseHttpFetchResult> {
-    const url = getBseAnnouncementsUrl();
+  async fetchAnnouncements(): Promise<BseHttpFetchResult> {
+    const requestUrl = getBseAnnouncementsUrl();
     const started = Date.now();
-    const rows: BseAnnouncementRow[] = [];
-    let lastStatus = 0;
-    let pagesFetched = 0;
 
-    const baseParams: BseQueryParams = {
-      Pageno: 1,
-      strCat: '-1',
-      strPrevDate,
-      strScrip: '',
-      strSearch: 'P',
-      strToDate,
-      strType: 'C',
-    };
+    try {
+      const response = await this.client.get<BseAnnouncementsApiResponse>(requestUrl);
+      const httpStatus = response.status;
 
-    const { maxPages } = newsIngestionConfig.bse;
+      if (httpStatus >= 400) {
+        throw new ProviderFetchError(
+          'bse',
+          `BSE request failed with HTTP ${httpStatus}`,
+          httpStatus,
+          requestUrl,
+        );
+      }
 
-    for (let page = 1; page <= maxPages; page++) {
-      const params = { ...baseParams, Pageno: page };
+      if (!Array.isArray(response.data)) {
+        throw new ProviderFetchError(
+          'bse',
+          'BSE response is not a JSON array',
+          httpStatus,
+          requestUrl,
+          { responseType: typeof response.data },
+        );
+      }
 
-      try {
-        const response = await this.client.get<BseAnnouncementsApiResponse>(url, { params });
-        lastStatus = response.status;
-        pagesFetched += 1;
+      const rows: BseAnnouncementRow[] = response.data;
 
-        if (response.status >= 400) {
-          throw new ProviderFetchError(
-            'bse',
-            `BSE request failed with HTTP ${response.status}`,
-            response.status,
-            this.buildRequestUrl(url, params),
-          );
-        }
+      logger.debug('BSE HTTP fetch complete', {
+        rowCount: rows.length,
+        httpStatus,
+      });
 
-        const table = response.data?.Table ?? [];
-        if (table.length === 0) {
-          break;
-        }
-
-        rows.push(...table);
-      } catch (error) {
-        if (error instanceof ProviderFetchError) {
-          throw error;
-        }
-        if (error instanceof AxiosError) {
-          throw new ProviderFetchError(
-            'bse',
-            error.message,
-            error.response?.status,
-            this.buildRequestUrl(url, params),
-            { code: error.code, page },
-          );
-        }
+      return {
+        rows,
+        requestUrl,
+        httpStatus,
+        durationMs: Date.now() - started,
+      };
+    } catch (error) {
+      if (error instanceof ProviderFetchError) {
         throw error;
       }
+      if (error instanceof AxiosError) {
+        throw new ProviderFetchError(
+          'bse',
+          error.message,
+          error.response?.status,
+          requestUrl,
+          { code: error.code },
+        );
+      }
+      throw error;
     }
-
-    const requestUrl = this.buildRequestUrl(url, { ...baseParams, Pageno: 1 });
-
-    logger.debug('BSE HTTP fetch complete', {
-      pagesFetched,
-      rowCount: rows.length,
-      httpStatus: lastStatus,
-    });
-
-    return {
-      rows,
-      requestUrl,
-      httpStatus: lastStatus,
-      durationMs: Date.now() - started,
-      pagesFetched,
-    };
-  }
-
-  private buildRequestUrl(url: string, params: BseQueryParams): string {
-    const search = new URLSearchParams();
-    for (const [key, value] of Object.entries(params)) {
-      search.set(key, String(value));
-    }
-    return `${url}?${search.toString()}`;
   }
 }
 
