@@ -1,0 +1,137 @@
+// Prisma schema for AI Stock News Analyzer
+// Models: Company, News, Event, Score, Announcement
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Company — NSE/BSE listed entity tracked by symbol
+// ---------------------------------------------------------------------------
+model Company {
+  id          String   @id @default(cuid())
+  symbol      String   @unique
+  companyName String   @map("company_name")
+  sector      String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  news   News[]
+  events Event[]
+  score  Score?
+
+  @@map("companies")
+}
+
+// ---------------------------------------------------------------------------
+// News — raw corporate announcement from a news provider
+// url is unique to support duplicate detection at the DB layer
+// ---------------------------------------------------------------------------
+model News {
+  id          String   @id @default(cuid())
+  companyId   String   @map("company_id")
+  headline    String
+  source      String
+  url         String   @unique
+  publishedAt DateTime @map("published_at")
+  rawContent  String   @map("raw_content") @db.Text
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  event   Event?
+
+  @@index([companyId])
+  @@index([publishedAt(sort: Desc)])
+  @@index([source])
+  @@map("news")
+}
+
+// ---------------------------------------------------------------------------
+// Event — AI-classified corporate event derived from a News item
+// One-to-one with News (each announcement analyzed once)
+// ---------------------------------------------------------------------------
+enum Impact {
+  Bullish
+  Bearish
+  Neutral
+}
+
+model Event {
+  id            String   @id @default(cuid())
+  newsId        String   @unique @map("news_id")
+  companyId     String   @map("company_id")
+  eventType     String   @map("event_type")
+  impact        Impact
+  confidence    Int
+  summary       String   @db.Text
+  expectedMove  String   @map("expected_move")
+  holdingPeriod String   @map("holding_period")
+  reason        String   @db.Text
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  news    News    @relation(fields: [newsId], references: [id], onDelete: Cascade)
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId])
+  @@index([impact])
+  @@index([createdAt(sort: Desc)])
+  @@map("events")
+}
+
+// ---------------------------------------------------------------------------
+// Score — aggregated signal strength per company (updated by AI pipeline)
+// ---------------------------------------------------------------------------
+model Score {
+  id        String   @id @default(cuid())
+  companyId String   @unique @map("company_id")
+  score     Float
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@map("scores")
+}
+
+// ---------------------------------------------------------------------------
+// Announcement — normalized NSE/BSE corporate announcement (ingestion engine)
+// fingerprint is unique for duplicate detection at the DB layer
+// AI columns remain NULL until future modules populate them
+// ---------------------------------------------------------------------------
+enum ProcessingStatus {
+  pending
+  processing
+  completed
+  failed
+  skipped
+}
+
+model Announcement {
+  id               String           @id @default(cuid())
+  source           String
+  symbol           String
+  companyName      String           @map("company_name")
+  headline         String
+  description      String           @db.Text
+  publishedAt      DateTime         @map("published_at")
+  url              String?
+  fingerprint      String           @unique
+  rawData          Json             @map("raw_data")
+  createdAt        DateTime         @default(now()) @map("created_at")
+  eventType        String?          @map("event_type")
+  impact           String?
+  confidence       Int?
+  score            Float?
+  processingStatus ProcessingStatus @default(pending) @map("processing_status")
+  aiVersion        String?          @map("ai_version")
+
+  @@index([symbol])
+  @@index([source])
+  @@index([publishedAt(sort: Desc)])
+  @@index([processingStatus])
+  @@map("announcements")
+}

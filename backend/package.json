@@ -1,0 +1,67 @@
+{
+  "name": "ai-stock-news-analyzer-backend",
+  "version": "1.0.0",
+  "description": "Backend API for AI Stock News Analyzer (Indian Stock Market)",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc && tsc-alias",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --config vitest.config.mts",
+    "test:watch": "vitest --config vitest.config.mts",
+    "lint": "eslint src --ext .ts",
+    "prisma:generate": "tsx scripts/run-with-env.ts prisma generate",
+    "prisma:migrate": "tsx scripts/run-with-env.ts prisma migrate dev",
+    "prisma:migrate:deploy": "tsx scripts/run-with-env.ts prisma migrate deploy",
+    "prisma:studio": "tsx scripts/run-with-env.ts prisma studio",
+    "prisma:seed": "tsx prisma/seed.ts",
+    "db:up": "docker compose -f ../docker/docker-compose.yml up -d",
+    "db:down": "docker compose -f ../docker/docker-compose.yml down",
+    "db:logs": "docker compose -f ../docker/docker-compose.yml logs -f",
+    "db:wait": "tsx scripts/wait-for-db.ts",
+    "db:migrate": "tsx scripts/run-with-env.ts prisma migrate deploy",
+    "db:seed": "npm run prisma:seed",
+    "db:setup": "tsx scripts/db-setup.ts"
+  },
+  "keywords": [
+    "stock-news",
+    "indian-stock-market",
+    "express",
+    "typescript"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@prisma/client": "^6.9.0",
+    "axios": "^1.9.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "helmet": "^8.1.0",
+    "ioredis": "^5.6.1",
+    "node-cron": "^3.0.3",
+    "openai": "^5.3.0",
+    "socket.io": "^4.8.1",
+    "winston": "^3.17.0",
+    "zod": "^3.25.56"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.18",
+    "@types/express": "^5.0.2",
+    "@types/node": "^22.15.30",
+    "@types/node-cron": "^3.0.11",
+    "prisma": "^6.9.0",
+    "socket.io-client": "^4.8.1",
+    "tsc-alias": "^1.8.16",
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3",
+    "vitest": "^4.1.10"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  }
+}
