@@ -6,6 +6,69 @@
   color-scheme: dark;
 }
 
+html.dark {
+  color-scheme: dark;
+}
+
+html.light {
+  color-scheme: light;
+}
+
+html,
 body {
-  @apply bg-surface text-slate-100 antialiased;
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  @apply bg-canvas text-zinc-100 antialiased;
+}
+
+@keyframes row-enter {
+  from {
+    opacity: 0;
+    background-color: rgba(16, 185, 129, 0.15);
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    background-color: transparent;
+    transform: translateY(0);
+  }
+}
+
+.animate-row-enter {
+  animation: row-enter 0.6s ease-out forwards;
+}
+
+html.light body {
+  @apply bg-canvas-light text-zinc-900;
+}
+
+html.light .bg-surface {
+  @apply bg-white;
+}
+
+html.light .bg-surface-raised {
+  @apply bg-zinc-50;
+}
+
+html.light .bg-surface-hover {
+  @apply bg-zinc-100;
+}
+
+html.light .border-surface-border {
+  @apply border-zinc-200;
+}
+
+html.light .text-zinc-100,
+html.light .text-zinc-200,
+html.light .text-zinc-300 {
+  @apply text-zinc-800;
+}
+
+html.light .text-zinc-400,
+html.light .text-zinc-500,
+html.light .text-zinc-600 {
+  @apply text-zinc-600;
 }
